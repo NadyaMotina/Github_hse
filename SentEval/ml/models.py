@@ -1,6 +1,5 @@
 from sklearn import svm
 from sklearn.cross_validation import train_test_split
-from sklearn.cross_validation import cross_val_score
 from sklearn.externals import joblib
 import pandas, sys
 import pickle
