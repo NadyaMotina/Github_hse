@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>SentEval</title>
+
+  <!-- Material Design fonts -->
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" type="text/css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <!-- Bootstrap -->
+  <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Bootstrap Material Design -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-material-design/0.5.8/css/bootstrap-material-design.css" rel="stylesheet">
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-material-design/0.5.8/css/ripples.min.css" rel="stylesheet">
+
+  <link href="http://fezvrasta.github.io/snackbarjs/dist/snackbar.min.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    main {
+      padding: 30px;
+    }
+    .navbar,
+    .navbar.navbar-default {
+      background-color: #199cdd;
+      -webkit-box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.12), 0 1px 6px 0 rgba(0, 0, 0, 0.12);
+      box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.12), 0 1px 6px 0 rgba(0, 0, 0, 0.12);
+}
+    footer {
+      margin: 5em 0
+    }
+    footer li {
+      float: left;
+      margin-right: 1.5em;
+      margin-bottom: 1.5em
+    }
+    footer p {
+      clear: left;
+      margin-bottom: 0
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="bs-component">
+      <div class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <class="bs-component">
+            <a class="navbar-brand" href="javascript:void(0)">SentEval</a>
+          </div>
+
+          <div class="navbar-collapse collapse navbar-responsive-collapse">
+            <ul class="nav navbar-nav">
+              <li class="active"><a href="javascript:void(0)">Раз</a></li>
+              <li><a href="javascript:void(0)">Два</a></li>                  
+              <li><a href="javascript:void(0)">Три</a></li>
+            </ul>
+          </li>
+        </ul>
+
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="javascript:void(0)">О проекте</a></li>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+</div>
+</header>
+
+<main>
+  <div class="row">
+    <div class="col-md-6">
+      <h3>SentEval — система проверки качества обслуживания ресторанов.</h3><br>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6">
+      <p>Система SentEval позволяет мгновенно получить анализ нужного ресторана, исходя из найденных в открытом доступе отзывов. Это вам не шуточки!</p>
+    </div>
+  </div>
+
+
+</div>
+</div>
+</div>
+</div>
+<div class="row">
+  <div class="col-md-6">
+    <div class="well bs-component">
+      <form class="form-horizontal">
+        <fieldset>
+          <div class="col-md-12">
+            <textarea class="form-control" rows="12" id="textArea"></textarea>
+            <span class="help-block">Скопируйте текст для проверки и нажмите кнопку.</span>
+          </div>
+        </fieldset>
+      </form>
+    </div>
+  </div>
+</div>
+</main>
+
+<footer>
+ <div class="panel panel-info">
+  <div class="panel-body">
+    <p class="bs-component btn-group-sm">
+      <a href="javascript:void(0)" class="btn btn-info btn-fab"><i class="material-icons">grade</i></a>
+    </p> 
+  </div>
+</div>
+</footer>
+
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+<script>
+  (function () {
+
+    var $button = $("<div id='source-button' class='btn btn-primary btn-xs'>&lt; &gt;</div>").click(function () {
+      var index = $('.bs-component').index($(this).parent());
+      $.get(window.location.href, function (data) {
+        var html = $(data).find('.bs-component').eq(index).html();
+        html = cleanSource(html);
+        $("#source-modal pre").text(html);
+        $("#source-modal").modal();
+      })
+
+    });
+
+    $('.bs-component [data-toggle="popover"]').popover();
+    $('.bs-component [data-toggle="tooltip"]').tooltip();
+
+    $(".bs-component").hover(function () {
+      $(this).append($button);
+      $button.show();
+    }, function () {
+      $button.hide();
+    });
+
+    function cleanSource(html) {
+      var lines = html.split(/\n/);
+
+      lines.shift();
+      lines.splice(-1, 1);
+
+      var indentSize = lines[0].length - lines[0].trim().length,
+      re = new RegExp(" {" + indentSize + "}");
+
+      lines = lines.map(function (line) {
+        if (line.match(re)) {
+          line = line.substring(indentSize);
+        }
+
+        return line;
+      });
+
+      lines = lines.join("\n");
+
+      return lines;
+    }
+
+    $(".icons-material .icon").each(function () {
+      $(this).after("<br><br><code>" + $(this).attr("class").replace("icon ", "") + "</code>");
+    });
+
+  })();
+
+</script>
+<script src="dist/js/ripples.min.js"></script>
+<script src="dist/js/material.min.js"></script>
+<script src="http://fezvrasta.github.io/snackbarjs/dist/snackbar.min.js"></script>
+
+
+<script src="http://cdnjs.cloudflare.com/ajax/libs/noUiSlider/6.2.0/jquery.nouislider.min.js"></script>
+<script>
+  $(function () {
+    $.material.init();
+    $(".shor").noUiSlider({
+      start: 40,
+      connect: "lower",
+      range: {
+        min: 0,
+        max: 100
+      }
+    });
+
+    $(".svert").noUiSlider({
+      orientation: "vertical",
+      start: 40,
+      connect: "lower",
+      range: {
+        min: 0,
+        max: 100
+      }
+    });
+  });
+</script>
+</body>
+</html>
