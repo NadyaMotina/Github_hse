@@ -5,7 +5,7 @@ from gensim.models import word2vec
 
 model = word2vec.Word2Vec.load_word2vec_format('./models/webcorpora.model.bin', binary= True)
 
-def main(line, model, window):
+def main(line, model):
     lemmas = line.split(" ")
     matrix = list()
     for lemma in lemmas:
