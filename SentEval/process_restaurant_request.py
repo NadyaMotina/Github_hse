@@ -15,11 +15,14 @@ import codecs
 import foursquare
 import pickle
 from sklearn.externals import joblib
+import numpy as np
+from gensim.models import word2vec
 import json
 import re
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
+
 from pymystem3 import Mystem
 m = Mystem()
 trash = [' ','\n','.','!','?', '']
@@ -75,24 +78,39 @@ def preprocess(reviews):
 		processed.append(lemmatized)
 	return processed
 
+def main(name):
+        start = time.time()
+        reviews = foursquare_crawl(name)
+        reviews = zoon_crawl(name, reviews)
+        processed = preprocess(reviews)
+        print "it took", time.time() - start, "seconds."
+        return processed
+
 ###############################################################################
 start = time.time()
 name = "Рецептор"
-# reviews = foursquare_crawl(name)
-# reviews = zoon_crawl(name, reviews)
-# print 'Foursquare and Zoon reviews ready! - got {} reviews in '.format(len(reviews)), time.time() - start, "seconds."
 
-###############################################################################
-#Lemmatizing and preprocessing for classifier
-
-start = time.time()
-# processed = preprocess(reviews)
-print "it took", time.time() - start, "seconds."
+processed = main(name)
 
 ###############################################################################
 # Classify reviews
 
-food_model = joblib.load("models/food.pkl")
+food_model = joblib.load("../../models/food.pkl")
+food_model = pickle.loads(food_model)
+
+model = word2vec.Word2Vec.load_word2vec_format('../../models/webcorpora.model.bin', binary= True)
+
+def main(line, model, window):
+        lemmas = line.split(" ")
+        matrix = list()
+        for lemma in lemmas:
+                try:
+                        print lemma
+                        print model[lemma]
+                        matrix.append(model[lemma])
+                except KeyError:
+                    pass
+        return np.mean(np.array(matrix), axis = 0)
 
 # def classify(review):
 # 	#input: lemmatized sentence
