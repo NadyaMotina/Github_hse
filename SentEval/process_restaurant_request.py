@@ -20,6 +20,7 @@ from gensim.models import word2vec
 import json
 import re
 import sys
+
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
@@ -62,87 +63,71 @@ def zoon_crawl(name, reviews):
 	return reviews
 
 def mystem(sentence):
-    # Preprocess reviews.
-    sentence = sentence.strip()
-    lemmas = m.lemmatize(sentence)
-    return lemmas
+	# Preprocess reviews
+	lemmas = m.analyze(sentence)
+	lemmas_with_pos = []
+	for i in lemmas:
+		if 'analysis' in i.keys():
+			if len(i['analysis']) != 0:
+				l = i['analysis'][0]['lex']
+				pos = i['analysis'][0]['gr'].split(',')[0].split('=')[0]
+				lemmas_with_pos.append(l+'_'+pos)
+	return lemmas_with_pos
 
 def preprocess(reviews):
+	# returns list of lists
 	processed = []
 	for review in reviews:
 		review = mystem(review)
-		lemmatized = ''
-		for i in review:
-			i = i.strip()
-			lemmatized += i + ' '
-		processed.append(lemmatized)
+		processed.append(review)
 	return processed
 
+def classify(reviews, food_model): #, service_model, interior_model, w2v_model):
+	matrix = list()
+	for review in reviews:
+		for lemma in review:
+			try:
+				matrix.append(food_model[lemma])
+			except KeyError:
+				pass
+	result = np.mean(np.array(matrix), axis = 0)
+	sentiment = food_model.predict(result)
+	return sentiment
+
 def main(name):
-        start = time.time()
-        reviews = foursquare_crawl(name)
-        reviews = zoon_crawl(name, reviews)
-        processed = preprocess(reviews)
-        print "it took", time.time() - start, "seconds."
-        return processed
+	start = time.time()
+	reviews = foursquare_crawl(name)
+	reviews = zoon_crawl(name, reviews)
+	processed = preprocess(reviews)
+	print 'Start model analysing'
+	sentiment = classify(processed, food_model)
+	print "it took", time.time() - start, "seconds."
+	print sentiment
+	return sentiment
 
 ###############################################################################
+food_model = joblib.load("../../SentEval/models/food.pkl")
+# service_model = joblib.load("../../SentEval/models/service.pkl")
+# interior = joblib.load("../../SentEval/models/interior.pkl")
+food_model = pickle.loads(food_model)
+# service_model = pickle.loads(service_model)
+# interior_model = pickle.loads(interior_model)
+
+w2v_model = word2vec.Word2Vec.load_word2vec_format('../../SentEval/models/webcorpora.model.bin', binary= True)
+print 'All models successfully loaded!'
+
 start = time.time()
 name = "Рецептор"
-
 processed = main(name)
 
-###############################################################################
-# Classify reviews
-
-food_model = joblib.load("../../models/food.pkl")
-food_model = pickle.loads(food_model)
-
-model = word2vec.Word2Vec.load_word2vec_format('../../models/webcorpora.model.bin', binary= True)
-
-def main(line, model, window):
-        lemmas = line.split(" ")
-        matrix = list()
-        for lemma in lemmas:
-                try:
-                        print lemma
-                        print model[lemma]
-                        matrix.append(model[lemma])
-                except KeyError:
-                    pass
-        return np.mean(np.array(matrix), axis = 0)
-
-# def classify(review):
-# 	#input: lemmatized sentence
-# 	#output: number from 1 and 5
-# 	pass
-#
-# sentiments = []
-# for review in processed:
-# 	sentiment.append(classify(review))
-#
-# result = sum(sentiments) / len(sentiments)
-
-##################################################
-# start = time.time()
-# import pymorphy2
-# morph = pymorphy2.MorphAnalyzer()
-# trash = [' ','\n','.','!','?', '']
-#
-# def mymorph(word):
-#     # Preprocess reviews.
-# 	p = morph.parse(word)[0]
-# 	return p.normal_form
-#
-# processed = []
-# for review in reviews:
-# 	review = review.split()
-# 	lemmatized = ''
-# 	for word in review:
-# 		word = word.strip('!,.?:;()"\'')
-# 		if word not in trash:
-# 			lemma = mymorph(word)
-# 			lemmatized += lemma + ' '
-# 	processed.append(lemmatized)
-#
-# print "it took", time.time() - start, "seconds."
+# def main(line, model):
+#         lemmas = line.split(" ")
+#         matrix = list()
+#         for lemma in lemmas:
+#                 try:
+#                         print lemma
+#                         print model[lemma]
+#                         matrix.append(model[lemma])
+#                 except KeyError:
+#                     pass
+#         return np.mean(np.array(matrix), axis = 0)
