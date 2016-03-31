@@ -82,12 +82,12 @@ def preprocess(reviews):
 		processed.append(review)
 	return processed
 
-def classify(reviews, food_model): #, service_model, interior_model, w2v_model):
+def classify(reviews, food_model, w2v_model): #, service_model, interior_model, ):
 	matrix = list()
 	for review in reviews:
 		for lemma in review:
 			try:
-				matrix.append(food_model[lemma])
+				matrix.append(w2v_model[lemma])
 			except KeyError:
 				pass
 	result = np.mean(np.array(matrix), axis = 0)
@@ -100,7 +100,7 @@ def main(name):
 	reviews = zoon_crawl(name, reviews)
 	processed = preprocess(reviews)
 	print 'Start model analysing'
-	sentiment = classify(processed, food_model)
+	sentiment = classify(processed, food_model, w2v_model)
 	print "it took", time.time() - start, "seconds."
 	print sentiment
 	return sentiment
@@ -119,15 +119,4 @@ print 'All models successfully loaded!'
 start = time.time()
 name = "Рецептор"
 processed = main(name)
-
-# def main(line, model):
-#         lemmas = line.split(" ")
-#         matrix = list()
-#         for lemma in lemmas:
-#                 try:
-#                         print lemma
-#                         print model[lemma]
-#                         matrix.append(model[lemma])
-#                 except KeyError:
-#                     pass
-#         return np.mean(np.array(matrix), axis = 0)
+print processed
