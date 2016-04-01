@@ -103,7 +103,7 @@ def preprocess(reviews):
 		processed.append(review)
 	return processed
 
-def classify(reviews, vocab_vectors):
+def classify(reviews, vocab_vectors, model):
 	matrix = []
 	for review in reviews:
 		for lemma in review:
@@ -112,10 +112,9 @@ def classify(reviews, vocab_vectors):
 			except KeyError:
 				pass
 	matrix = np.mean(np.array(matrix), axis = 0)
-	print len(matrix)
-	print vocab_vectors.shape
-	result = np.concatenate((matrix, vocab_vectors), axis = 1)
-	sentiment = food_model.predict(result)
+	vocab_vectors = np.mean(vocab_vectors, axis = 0)
+	result = np.concatenate((matrix, vocab_vectors))
+	sentiment = model.predict(result)
 	return sentiment
 
 def main(name):
@@ -123,25 +122,27 @@ def main(name):
 	reviews = foursquare_crawl(name)
 	reviews = zoon_crawl(name, reviews)
 	processed = preprocess(reviews)
-	print 'Start model analysing'
+	print 'All reviews crawled. It took ' , time.time() - start, " seconds. Start model analysing..."
 	vocab_vectors = vocab_check(reviews, vocabulary)
-	sentiment = classify(processed, vocab_vectors)
-	print "it took", time.time() - start, "seconds."
-	print sentiment
-	return sentiment
+	food_sentiment = classify(processed, vocab_vectors, food_model)
+	service_sentiment = classify(processed, vocab_vectors, service_model)
+	interior_sentiment = classify(processed, vocab_vectors, interior_model)
+	print "Sentiment analysis done! It took ", time.time() - start, " seconds."
+	return [food_sentiment, service_sentiment, interior_sentiment]
 
 ###############################################################################
-food_model = joblib.load("../../SentEval/models/food.pkl")
-# service_model = joblib.load("../../SentEval/models/service.pkl")
-# interior = joblib.load("../../SentEval/models/interior.pkl")
-food_model = pickle.loads(food_model)
-# service_model = pickle.loads(service_model)
-# interior_model = pickle.loads(interior_model)
-w2v_model = word2vec.Word2Vec.load_word2vec_format('../../SentEval/models/webcorpora.model.bin', binary= True)
-print 'All models successfully loaded!'
 
 start = time.time()
+food_model = joblib.load("../../SentEval/models/food.pkl")
+service_model = joblib.load("../../SentEval/models/service.pkl")
+interior_model = joblib.load("../../SentEval/models/interior.pkl")
+food_model = pickle.loads(food_model)
+service_model = pickle.loads(service_model)
+interior_model = pickle.loads(interior_model)
+w2v_model = word2vec.Word2Vec.load_word2vec_format('../../SentEval/models/webcorpora.model.bin', binary= True)
+print 'All models successfully loaded! it took ', time.time() - start, " seconds."
+
 vocabulary = collect_vocabs()
-name = "Рецептор"
+name = "Якитория"
 processed = main(name)
-# print processed
+print processed
