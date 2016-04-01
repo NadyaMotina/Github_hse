@@ -1,13 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# input1 : restaurant name
-
-# 1) crawl zoon and foursquare
-# 2) clean and lemmatize
-# 3) classify
-# 4) return statistics
-###############################################################################
-
 from bs4 import BeautifulSoup
 import time
 import urllib
@@ -20,13 +12,42 @@ from gensim.models import word2vec
 import json
 import re
 import sys
+import os
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
 from pymystem3 import Mystem
 m = Mystem()
-trash = [' ','\n','.','!','?', '']
+
+def collect_vocabs():
+	# Getting words from all our vocabularies with '.lst' extensions:
+	vocabulary = {}
+	voc_files = [f for f in os.listdir('vocabularies/') if f.endswith('.lst')]
+	for f in voc_files:
+		words = set()
+		for line in open('vocabularies/' + f, 'r'):
+			lemma = line.strip().split(': ')[0]
+			words.add(lemma.strip())
+		voc_name = f.replace('.lst','')
+		vocabulary[voc_name] = words
+	return vocabulary
+
+def vocab_check(reviews, vocabulary):
+	# Checking for vocabulary words in the review
+	vocab_vectors = list()
+	counter = 1
+	for review in reviews:
+		vector = []
+		size = len(review)
+		for voc in vocabulary:
+			voc_words = [w for w in review if w.split('_')[0] in vocabulary[voc]]
+			value = len(voc_words)/float(size)
+			vector.append(value)
+		counter += 1
+		vocab_vectors.append(vector)
+	vocab_vectors = np.array(vocab_vectors)
+	return vocab_vectors
 
 def foursquare_crawl(name):
 	client = foursquare.Foursquare(client_id='3XM4S22O2C4HRHW1WSGIVMMNJZPMMYS3YYUFNGS1BNBNJMDY', \
@@ -82,15 +103,18 @@ def preprocess(reviews):
 		processed.append(review)
 	return processed
 
-def classify(reviews, food_model, w2v_model): #, service_model, interior_model, ):
-	matrix = list()
+def classify(reviews, vocab_vectors):
+	matrix = []
 	for review in reviews:
 		for lemma in review:
 			try:
 				matrix.append(w2v_model[lemma])
 			except KeyError:
 				pass
-	result = np.mean(np.array(matrix), axis = 0)
+	matrix = np.mean(np.array(matrix), axis = 0)
+	print len(matrix)
+	print vocab_vectors.shape
+	result = np.concatenate((matrix, vocab_vectors), axis = 1)
 	sentiment = food_model.predict(result)
 	return sentiment
 
@@ -100,7 +124,8 @@ def main(name):
 	reviews = zoon_crawl(name, reviews)
 	processed = preprocess(reviews)
 	print 'Start model analysing'
-	sentiment = classify(processed, food_model, w2v_model)
+	vocab_vectors = vocab_check(reviews, vocabulary)
+	sentiment = classify(processed, vocab_vectors)
 	print "it took", time.time() - start, "seconds."
 	print sentiment
 	return sentiment
@@ -112,11 +137,11 @@ food_model = joblib.load("../../SentEval/models/food.pkl")
 food_model = pickle.loads(food_model)
 # service_model = pickle.loads(service_model)
 # interior_model = pickle.loads(interior_model)
-
 w2v_model = word2vec.Word2Vec.load_word2vec_format('../../SentEval/models/webcorpora.model.bin', binary= True)
 print 'All models successfully loaded!'
 
 start = time.time()
+vocabulary = collect_vocabs()
 name = "Рецептор"
 processed = main(name)
-print processed
+# print processed
