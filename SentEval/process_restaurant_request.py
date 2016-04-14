@@ -1,18 +1,17 @@
 # -*- coding: utf-8 -*-
 
-from bs4 import BeautifulSoup
-import time
-import urllib
-import codecs
-import foursquare
-import pickle
-from sklearn.externals import joblib
-import numpy as np
-from gensim.models import word2vec
 import json
 import re
 import sys
 import os
+import time
+import urllib
+import pickle
+import foursquare
+import numpy as np
+from bs4 import BeautifulSoup
+from gensim.models import word2vec
+from sklearn.externals import joblib
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -40,12 +39,13 @@ def vocab_check(reviews, vocabulary):
 	for review in reviews:
 		vector = []
 		size = len(review)
-		for voc in vocabulary:
-			voc_words = [w for w in review if w.split('_')[0] in vocabulary[voc]]
-			value = len(voc_words)/float(size)
-			vector.append(value)
-		counter += 1
-		vocab_vectors.append(vector)
+		if size > 0:
+			for voc in vocabulary:
+				voc_words = [w for w in review if w.split('_')[0] in vocabulary[voc]]
+				value = len(voc_words)/float(size)
+				vector.append(value)
+			counter += 1
+			vocab_vectors.append(vector)
 	vocab_vectors = np.array(vocab_vectors)
 	return vocab_vectors
 
@@ -55,14 +55,12 @@ def foursquare_crawl(name):
 	place=client.venues.search(params={'near': 'Moscow', 'limit': 10, 'query': name})
 	tr1=json.dumps(place)
 	tr2=json.loads(tr1)
-	tr3=json.dumps(tr2, indent=4, sort_keys=True)
 	reviews = []
 	for i in tr2['venues']:
 		cafeid=i['id']
 		e=client.venues.tips(cafeid)
 		pop1=json.dumps(e)
 		pop2=json.loads(pop1)
-		pop3=json.dumps(pop2, indent=4, sort_keys=True, encoding='utf-8')
 		for tip in pop2['tips']['items']:
 			text=tip['text']
 			reviews.append(text)
@@ -122,17 +120,20 @@ def main(name):
 	reviews = foursquare_crawl(name)
 	reviews = zoon_crawl(name, reviews)
 	processed = preprocess(reviews)
-	print 'All reviews crawled. It took ' , time.time() - start, " seconds. Start model analysing..."
-	vocab_vectors = vocab_check(reviews, vocabulary)
+	# print 'Number of reviews: ', len(processed)
+	# print 'All reviews crawled. It took ' , time.time() - start, " seconds. Start model analysing..."
+	vocab_vectors = vocab_check(processed, vocabulary)
 	food_sentiment = classify(processed, vocab_vectors, food_model)
 	service_sentiment = classify(processed, vocab_vectors, service_model)
 	interior_sentiment = classify(processed, vocab_vectors, interior_model)
-	print "Sentiment analysis done! It took ", time.time() - start, " seconds."
-	return [food_sentiment, service_sentiment, interior_sentiment]
+	# print "Sentiment analysis done! It took ", time.time() - start, " seconds."
+	return {'food_sentiment':food_sentiment[0], 'service_sentiment':service_sentiment[0],\
+			'interior_sentiment':interior_sentiment[0]}
 
 ###############################################################################
 
-start = time.time()
+# start = time.time()
+vocabulary = collect_vocabs()
 food_model = joblib.load("../../SentEval/models/food.pkl")
 service_model = joblib.load("../../SentEval/models/service.pkl")
 interior_model = joblib.load("../../SentEval/models/interior.pkl")
@@ -140,9 +141,8 @@ food_model = pickle.loads(food_model)
 service_model = pickle.loads(service_model)
 interior_model = pickle.loads(interior_model)
 w2v_model = word2vec.Word2Vec.load_word2vec_format('../../SentEval/models/webcorpora.model.bin', binary= True)
-print 'All models successfully loaded! it took ', time.time() - start, " seconds."
+# print 'All models successfully loaded! it took ', time.time() - start, " seconds."
 
-vocabulary = collect_vocabs()
-name = "Якитория"
+name = sys.argv[1]
 processed = main(name)
 print processed
