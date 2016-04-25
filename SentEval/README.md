@@ -1,8 +1,7 @@
 # SentEval
 
 This is a student project for sentiment analysis of restaurant reviews.<br>
-You can test it as a web service on http://sehse.azurewebsites.net/<br>
-The project is absolutely free so you can try it either online, or load all the materials and test it yourself.<br>
+The project is absolutely free so you can try load all the materials and test it yourself.<br>
 
 ### How does it work?
 
@@ -20,7 +19,6 @@ The project is absolutely free so you can try it either online, or load all the 
 
 Это научно-исследовательский проект в рамках курса обучения в магистратуре НИУ ВШЭ.<br>
 Основная цель проекта - реализация анализа тональности отзывов о ресторанах.<br>
-Результаты работы проекта можно увидеть с помощью веб-сервиса http://sehse.azurewebsites.net/<br>
 Это открытый проект, поэтому любой желающий может воспользоваться результатами онлайн, либо скачать все материалы и протестировать их самостоятельно.<br>
 
 ### Как это работает?
@@ -45,4 +43,4 @@ The project is absolutely free so you can try it either online, or load all the 
 3. в скрипте process_restaurant_request.py в строчках 137, 138, 139 и 143 указать соответствующие пути к моделям (мы не стали размещать модели в репозатории, так как они весьма массивные - в сумме ~ 1.1 Gb)
 4. в командной строке убедиться, что вы находитесь в той же папке, где лежит скрипт, и ввести:
 	>>> python process_restaurant_request.py "название ресторана"
-5. в результате вы получите json с оценками по 3 аспектам.
+5. в результате вы получите json с оценками по 3 аспектам и числом обработанных отзывов.
