@@ -63,6 +63,7 @@ def foursquare_crawl(name):
 	return reviews
 		
 def zoon_crawl(name, reviews):
+	name = name.encode('utf8')
 	respData = urllib.urlopen("http://zoon.ru/search/?query=" + name).read()
 	rutext = respData.decode("utf-8")
 	soup1 = BeautifulSoup(rutext, 'html.parser')
@@ -122,31 +123,27 @@ def classify(reviews, model, vocabulary):
 
 def sentiments_mean(sentiments):
 	final = np.mean(np.array(sentiments))
-	print sentiments#.count(1), sentiments.count(-1), sentiments.count(0)
-	if final > 0:
-		return 'positive'
-	elif final < 0:
-		return 'negative'
-	else:
-		return 'neutral'
+	# print sentiments
+	if final > 0: return 'positive'
+	elif final < 0: return 'negative'
+	else: return 'neutral'
 
 def main(name):
 	start = time.time()
 	reviews = foursquare_crawl(name)
 	reviews = zoon_crawl(name, reviews)
-	processed = preprocess(reviews)
-	food_sentiment = classify(processed, food_model, vocabulary)
-	service_sentiment = classify(processed, service_model, vocabulary)
-	interior_sentiment = classify(processed, interior_model, vocabulary)
-	return {'food_sentiment':food_sentiment, 'service_sentiment':service_sentiment,\
-			'interior_sentiment':interior_sentiment, 'reviews_number':len(processed)}
-
-def open_zip(path):
-	with zipfile.ZipFile(path, "r") as zfile:
-		for name in zfile.namelist():
-			if 'MACOSX' not in name:
-				model = zfile.open(name)
-				return model
+	if len(reviews) == 0:
+		print "No reviews found! Probably, there is no such restaurant name"
+		return {'food_sentiment':'neutral', 'service_sentiment':'neutral',\
+				'interior_sentiment':'neutral', 'reviews_number':0, 'reviews':[]}
+	else:
+		processed = preprocess(reviews)
+		food_sentiment = classify(processed, food_model, vocabulary)
+		service_sentiment = classify(processed, service_model, vocabulary)
+		interior_sentiment = classify(processed, interior_model, vocabulary)
+		return {'food_sentiment':food_sentiment, 'service_sentiment':service_sentiment,\
+				'interior_sentiment':interior_sentiment, 'reviews_number':len(processed),\
+				'reviews':reviews[:5]}
 
 ###############################################################################
 
@@ -160,13 +157,8 @@ interior_model = pickle.loads(interior_model)
 
 w2v_model = word2vec.Word2Vec.load_word2vec_format('../../Models/webcorpora.model.bin', binary= True)
 
-#food_model = pickle.load(open_zip("../../Models/food.pkl.zip"))
-#service_model = pickle.load(open_zip("../../Models/service.pkl.zip"))
-#interior_model = pickle.load(open_zip("../../Models/interior.pkl.zip"))
-#webcorpora = open_zip('../../Models/ruscorpora.model.bin')
-#w2v_model = word2vec.Word2Vec.load_word2vec_format(webcorpora, binary=True)
-
-name = sys.argv[1]
-processed = main(name)
-print processed
+if __name__ == "__main__":
+	name = sys.argv[1].decode('utf8')
+	processed = main(name)
+	print processed
 

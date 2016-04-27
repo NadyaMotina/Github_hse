@@ -1,6 +1,6 @@
 # SentEval
 
-This is a student project for sentiment analysis of restaurant reviews.<br>
+This is a student project for sentiment analysis of restaurant reviews which is a part of [HSE Computational Linguistics studying program](https://www.hse.ru/en/ma/ling/).<br>
 The project is absolutely free so you can try load all the materials and test it yourself.<br>
 
 ### How does it work?
@@ -17,7 +17,7 @@ The project is absolutely free so you can try load all the materials and test it
 
 # SentEval
 
-Это научно-исследовательский проект в рамках курса обучения в магистратуре НИУ ВШЭ.<br>
+Это научно-исследовательский проект в рамках учебной программы [Компьютерная лингвистика в магистратуре НИУ ВШЭ](https://www.hse.ru/ma/ling/).<br>
 Основная цель проекта - реализация анализа тональности отзывов о ресторанах.<br>
 Это открытый проект, поэтому любой желающий может воспользоваться результатами онлайн, либо скачать все материалы и протестировать их самостоятельно.<br>
 
