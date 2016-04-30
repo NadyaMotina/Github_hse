@@ -123,11 +123,12 @@ def classify(reviews, model, vocabulary):
 	return sentiments_mean(sentiments)
 
 def sentiments_mean(sentiments):
-	senti_dic = {}
-	senti_dic['positive'] = sentiments.count(1)
-	senti_dic['negative'] = sentiments.count(-1)
-	senti_dic['neutral'] = sentiments.count(0)
-	return senti_dic
+	final = np.mean(np.array(sentiments))
+	# print sentiments
+	#if final > 0: return 'positive'
+	#elif final < 0: return 'negative'
+	#else: return 'neutral'
+	return sentiments
 
 def main(name):
 	start = time.time()
